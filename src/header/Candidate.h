@@ -1,28 +1,26 @@
 #ifndef CANDIDATE_H
 #define CANDIDATE_H
 
+#include "User.h"
+#include <iostream>
 #include <string>
 
-class Candidate {
+class Candidate : public User {
 private:
-    std::string id;
+    std::string candidateId;
     std::string name;
     std::string partyAffiliation;
     int voteCount;
-
 public:
     Candidate();
-    Candidate(std::string id, std::string name, std::string partyAffiliation);
-
-    std::string getId() const;
-    std::string getName() const;
+    Candidate(std::string username, std::string password, std::string name, std::string id, std::string partyAffiliation);
+    void displayMenu() override;
     std::string getPartyAffiliation() const;
+    std::string getCandidateId() const;
+    std::string getName() const;
     int getVoteCount() const;
     void incrementVotes();
     void displayInfo() const;
-
-    // For comparison in Array::contains
-    bool operator==(const Candidate &other) const;
 };
 
-#endif // CANDIDATE_H
+#endif // CANDIDATE_USER_H
