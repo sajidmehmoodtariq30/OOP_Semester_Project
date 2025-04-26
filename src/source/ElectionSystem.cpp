@@ -75,3 +75,58 @@ void ElectionSystem::seedData() {
     voters.add(Voter("voter2", "pass456", "Rehan Ali", "V002", "Lahore Pakistan", "VID67890"));
     voters.add(Voter("voter3", "pass789", "Haseeb Iqbal", "V003", "Lahore Pakistan", "VID54321"));
 }
+
+bool ElectionSystem::login(std::string username, std::string password) {
+    // Try to login as voter
+    for (int i = 0; i < voters.getSize(); i++) {
+        if (voters.get(i).getUsername() == username) {
+            if (voters.get(i).login(username, password)) {
+                currentUser = &voters.get(i);
+                std::cout << "Logged in as Voter: " << currentUser->getName() << std::endl;
+                return true;
+            }
+        }
+    }
+    // Try to login as admin
+    for (int i = 0; i < admins.getSize(); i++) {
+        if (admins.get(i).getUsername() == username) {
+            if (admins.get(i).login(username, password)) {
+                currentUser = &admins.get(i);
+                std::cout << "Logged in as Administrator: " << currentUser->getName() << std::endl;
+                return true;
+            }
+        }
+    }
+    // Try to login as candidate
+    for (int i = 0; i < candidates.getSize(); i++) {
+        if (candidates.get(i).getUsername() == username) {
+            if (candidates.get(i).login(username, password)) {
+                currentUser = &candidates.get(i);
+                std::cout << "Logged in as Candidate: " << currentUser->getName() << std::endl;
+                return true;
+            }
+        }
+    }
+    std::cout << "Invalid username or password." << std::endl;
+    return false;
+}
+
+void ElectionSystem::logout() {
+    if (currentUser) {
+        currentUser->logout();
+        currentUser = nullptr;
+        std::cout << "Logged out successfully." << std::endl;
+    }
+}
+
+bool ElectionSystem::isLoggedIn() const {
+    return currentUser != nullptr && currentUser->isAuthenticated();
+}
+
+bool ElectionSystem::isAdmin() const {
+    return dynamic_cast<Administrator*>(currentUser) != nullptr;
+}
+
+bool ElectionSystem::isCandidate() const {
+    return dynamic_cast<Candidate*>(currentUser) != nullptr;
+}

@@ -11,4 +11,15 @@ class ElectionSystem {
 public:
     ElectionSystem();
     ~ElectionSystem();
+
+    void seedData();
+    bool saveData();
+    bool loadData();
+
+    bool login(std::string username, std::string password);
+    void logout();
+    bool isLoggedIn() const;
+    bool isAdmin() const;
+
+    void run();
 }
