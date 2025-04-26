@@ -2,11 +2,12 @@
 #include <iostream>
 #include <iomanip>
 #include <ctime>
+#include <cstring> // For strcpy
 
 Election::Election(std::string id, std::string name, std::string description, 
-               time_t startDate, time_t endDate)
+               time_t /*startDate*/, time_t /*endDate*/)
     : id(id), name(name), description(description),
-      startDate(startDate), endDate(endDate), isActive(false) {
+      startTime(0), endTime(0), durationSeconds(0), isActive(false) {
 }
 
 Election::~Election() {
@@ -21,11 +22,47 @@ std::string Election::getName() const {
     return name;
 }
 
+// --- New time-based methods ---
+void Election::setDuration(int minutes, int seconds) {
+    durationSeconds = minutes * 60 + seconds;
+}
+
+void Election::setStartTime(time_t start) {
+    startTime = start;
+    calculateEndTime();
+}
+
+void Election::calculateEndTime() {
+    endTime = startTime + durationSeconds;
+}
+
+time_t Election::getStartTime() const {
+    return startTime;
+}
+
+time_t Election::getEndTime() const {
+    return endTime;
+}
+
+int Election::getDurationSeconds() const {
+    return durationSeconds;
+}
+
+// --- Updated isElectionActive ---
 bool Election::isElectionActive() const {
-    return isActive;
+    if (!isActive) return false;
+    time_t now = time(nullptr);
+    if (now >= endTime) {
+        // Election should be ended
+        // Note: isActive is not mutable in const method, so this should be handled outside
+        return false;
+    }
+    return true;
 }
 
 void Election::startElection() {
+    startTime = time(nullptr);
+    calculateEndTime();
     isActive = true;
 }
 
@@ -89,13 +126,19 @@ void Election::displayInfo() const {
     std::cout << "Description: " << description << std::endl;
     
     // Convert time_t to readable format
-    char startDateStr[26];
-    char endDateStr[26];
-    ctime_s(startDateStr, sizeof(startDateStr), &startDate);
-    ctime_s(endDateStr, sizeof(endDateStr), &endDate);
-    
-    std::cout << "Start Date: " << startDateStr;
-    std::cout << "End Date: " << endDateStr;
+    char startTimeStr[26];
+    char endTimeStr[26];
+    if (startTime > 0)
+        ctime_s(startTimeStr, sizeof(startTimeStr), &startTime);
+    else
+        std::strcpy(startTimeStr, "Not started\n");
+    if (endTime > 0)
+        ctime_s(endTimeStr, sizeof(endTimeStr), &endTime);
+    else
+        std::strcpy(endTimeStr, "Not set\n");
+    std::cout << "Start Time: " << startTimeStr;
+    std::cout << "End Time: " << endTimeStr;
+    std::cout << "Duration: " << (durationSeconds / 60) << " min " << (durationSeconds % 60) << " sec" << std::endl;
     std::cout << "Status: " << (isActive ? "Active" : "Inactive") << std::endl;
 }
 

@@ -39,6 +39,8 @@ public:
     // Methods for system operation
     void registerVoter(std::string username, std::string password, std::string name, 
                       std::string id, std::string address, std::string voterIdNumber);
+    // Overload for interactive voter registration (admin only)
+    void registerVoter();
     void createElection(int electionType);
     void addCandidate();
     void displayElections() const;
@@ -49,6 +51,7 @@ public:
     // User interface methods
     void displayMainMenu() const;
     void run();
+    void runDemo();
     
     // File handling methods
     bool saveData();

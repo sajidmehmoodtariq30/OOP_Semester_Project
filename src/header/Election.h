@@ -12,8 +12,11 @@ protected:
     std::string id;
     std::string name;
     std::string description;
-    time_t startDate;
-    time_t endDate;
+    // Deprecated: time_t startDate;
+    // Deprecated: time_t endDate;
+    time_t startTime; // Time when election is started (set by admin)
+    time_t endTime;   // Time when election ends (startTime + duration)
+    int durationSeconds; // Duration in seconds (set at creation)
     bool isActive;
     Array<Candidate> candidates;
     Array<Vote> votes;
@@ -30,7 +33,7 @@ public:
 
     std::string getId() const;
     std::string getName() const;
-    bool isElectionActive() const;
+    bool isElectionActive() const; // Will now check current time vs endTime
     void startElection();
     void endElection();
     void addCandidate(const Candidate &candidate);
@@ -47,6 +50,14 @@ public:
 
     // For comparison
     bool operator==(const Election &other) const;
+
+    // New methods for time-based elections
+    void setDuration(int minutes, int seconds); // Set duration
+    void setStartTime(time_t start);            // Set start time
+    void calculateEndTime();                    // Calculate end time
+    time_t getStartTime() const;
+    time_t getEndTime() const;
+    int getDurationSeconds() const;
 };
 
 #endif // ELECTION_H

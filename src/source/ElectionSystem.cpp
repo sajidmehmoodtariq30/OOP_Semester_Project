@@ -13,6 +13,10 @@
 #include <string>
 #include <ctime>
 #include <filesystem>
+#include <conio.h> // For getch() on Windows
+
+// Forward declaration for getMaskedPassword
+std::string getMaskedPassword();
 
 // Implementation of ElectionSystem class methods
 ElectionSystem::ElectionSystem() : currentUser(nullptr) {
@@ -189,6 +193,28 @@ void ElectionSystem::registerVoter(std::string username, std::string password, s
     saveData();
 }
 
+void ElectionSystem::registerVoter() {
+    if (!isLoggedIn() || !isAdmin()) {
+        std::cout << "Only administrators can register voters." << std::endl;
+        return;
+    }
+    std::string username, password, name, id, address, voterIdNumber;
+    std::cin.ignore();
+    std::cout << "Enter Voter Username: ";
+    std::getline(std::cin, username);
+    std::cout << "Enter Voter Password: ";
+    password = getMaskedPassword();
+    std::cout << "Enter Voter Name: ";
+    std::getline(std::cin, name);
+    std::cout << "Enter Voter ID: ";
+    std::getline(std::cin, id);
+    std::cout << "Enter Voter Address: ";
+    std::getline(std::cin, address);
+    std::cout << "Enter Voter ID Number: ";
+    std::getline(std::cin, voterIdNumber);
+    registerVoter(username, password, name, id, address, voterIdNumber);
+}
+
 void ElectionSystem::registerCandidate(std::string username, std::string password, std::string name, std::string id, std::string partyAffiliation) {
     if (!isLoggedIn() || !isAdmin()) {
         std::cout << "Only administrators can register candidates." << std::endl;
@@ -220,9 +246,8 @@ void ElectionSystem::createElection(int electionType) {
         return;
     }
 
-    std::string id, name, description, startDateStr, endDateStr;
-    time_t startDate, endDate;
-
+    std::string id, name, description;
+    int durationMinutes, durationSeconds;
     std::cout << "Enter Election ID: ";
     std::cin.ignore();
     std::getline(std::cin, id);
@@ -230,15 +255,11 @@ void ElectionSystem::createElection(int electionType) {
     std::getline(std::cin, name);
     std::cout << "Enter Description: ";
     std::getline(std::cin, description);
-    std::cout << "Enter Start Date (YYYY-MM-DD): ";
-    std::getline(std::cin, startDateStr);
-    std::cout << "Enter End Date (YYYY-MM-DD): ";
-    std::getline(std::cin, endDateStr);
-
-    // In a real system, you would parse these date strings and convert to time_t
-    // For simplicity, we'll just use the current time
-    startDate = time(nullptr);
-    endDate = time(nullptr) + 30*24*60*60; // Add 30 days
+    std::cout << "Enter Election Duration (minutes): ";
+    std::cin >> durationMinutes;
+    std::cout << "Enter Election Duration (seconds): ";
+    std::cin >> durationSeconds;
+    std::cin.ignore();
 
     Election* newElection = nullptr;
 
@@ -247,15 +268,14 @@ void ElectionSystem::createElection(int electionType) {
         std::string locality;
         std::cout << "Enter Locality: ";
         std::getline(std::cin, locality);
-        // Using the converted time_t values for dates
-        newElection = new LocalElection(id, name, description, startDateStr, endDateStr, locality);
+        newElection = new LocalElection(id, name, description, "", "", locality);
         break;
     }
     case 2: { // National Election
         std::string country;
         std::cout << "Enter Country: ";
         std::getline(std::cin, country);
-        newElection = new NationalElection(id, name, description, startDateStr, endDateStr, country);
+        newElection = new NationalElection(id, name, description, "", "", country);
         break;
     }
     case 3: { // Regional Election
@@ -264,7 +284,7 @@ void ElectionSystem::createElection(int electionType) {
         std::getline(std::cin, region);
         std::cout << "Enter Country: ";
         std::getline(std::cin, country);
-        newElection = new RegionalElection(id, name, description, startDateStr, endDateStr, region, country);
+        newElection = new RegionalElection(id, name, description, "", "", region, country);
         break;
     }
     default:
@@ -273,6 +293,7 @@ void ElectionSystem::createElection(int electionType) {
     }
 
     if (newElection) {
+        newElection->setDuration(durationMinutes, durationSeconds);
         elections.add(newElection);
         std::cout << "Election created successfully." << std::endl;
     }
@@ -363,8 +384,10 @@ void ElectionSystem::manageElection() {
 
     if (action == 1) {
         selectedElection->startElection();
+        std::cout << "Election started. It will end automatically after the set duration." << std::endl;
     } else if (action == 2) {
         selectedElection->endElection();
+        std::cout << "Election ended manually." << std::endl;
     } else {
         std::cout << "Invalid choice." << std::endl;
     }
@@ -383,6 +406,9 @@ void ElectionSystem::castVote() {
         Election* election = elections.get(i);
         if (election->isElectionActive()) {
             std::cout << ++activeCount << ". " << election->getName() << " - Type: " << election->getType() << std::endl;
+        } else if (!election->isElectionActive()) {
+            // If election was active but time expired, end it
+            election->endElection();
         }
     }
 
@@ -438,6 +464,7 @@ void ElectionSystem::castVote() {
 
     std::string candidateId = selectedElection->getCandidate(candidateChoice - 1).getId();
     selectedElection->castVote(currentUser->getId(), candidateId);
+    std::cout << "Vote cast successfully!" << std::endl;
 }
 
 void ElectionSystem::viewResults() const {
@@ -467,6 +494,26 @@ void ElectionSystem::displayMainMenu() const {
     std::cout << "Enter your choice: ";
 }
 
+std::string getMaskedPassword() {
+    std::string password;
+    char ch;
+    while ((ch = _getch()) != '\r') { // Enter key
+        if (ch == '\b') { // Backspace
+            if (!password.empty()) {
+                password.pop_back();
+                std::cout << "\b \b";
+            }
+        } else if (ch == 3) { // Ctrl+C
+            exit(0);
+        } else if (isprint(ch)) {
+            password += ch;
+            std::cout << '*';
+        }
+    }
+    std::cout << std::endl;
+    return password;
+}
+
 void ElectionSystem::run() {
     int choice;
     while (true) {
@@ -479,7 +526,7 @@ void ElectionSystem::run() {
                 std::cout << "Enter Username: ";
                 std::cin >> username;
                 std::cout << "Enter Password: ";
-                std::cin >> password;
+                password = getMaskedPassword();
                 login(username, password);
                 break;
             }
@@ -492,6 +539,10 @@ void ElectionSystem::run() {
         } else {
             // User is logged in, show appropriate menu
             currentUser->displayMenu();
+            std::cout << "3. Register Voter" << std::endl;
+            std::cout << "4. Manage Election" << std::endl;
+            std::cout << "5. View Results" << std::endl;
+            std::cout << "6. Logout" << std::endl;
             std::cin >> choice;
             if (isAdmin()) {
                 switch (choice) {
@@ -510,12 +561,16 @@ void ElectionSystem::run() {
                     addCandidate();
                     break;
                 case 3:
-                    manageElection();
+                    // Register Voter
+                    registerVoter();
                     break;
                 case 4:
-                    viewResults();
+                    manageElection();
                     break;
                 case 5:
+                    viewResults();
+                    break;
+                case 6:
                     logout();
                     break;
                 default:
@@ -552,4 +607,37 @@ void ElectionSystem::run() {
             }
         }
     }
+}
+
+void ElectionSystem::runDemo() {
+    std::cout << "\n=== DEMO MODE: Online Voting System ===\n";
+    std::cout << "Step 1: Logging in as admin (admin/admin123)...\n";
+    if (!login("admin", "admin123")) {
+        std::cout << "Demo failed: Could not login as admin.\n";
+        return;
+    }
+    std::cout << "Step 2: Creating a Local Election...\n";
+    // Create a local election with hardcoded values
+    elections.add(new LocalElection("E001", "Local Election 2025", "Demo local election.", "", "", "DemoTown"));
+    std::cout << "Step 3: Adding candidates to the election...\n";
+    elections.get(0)->addCandidate(Candidate("", "", "Alice Demo", "C001", "Party A"));
+    elections.get(0)->addCandidate(Candidate("", "", "Bob Demo", "C002", "Party B"));
+    std::cout << "Step 4: Starting the election...\n";
+    elections.get(0)->startElection();
+    logout();
+    std::cout << "Step 5: Logging in as voter (voter1/pass123)...\n";
+    if (!login("voter1", "pass123")) {
+        std::cout << "Demo failed: Could not login as voter.\n";
+        return;
+    }
+    std::cout << "Step 6: Casting a vote for Alice Demo...\n";
+    elections.get(0)->castVote(currentUser->getId(), "C001");
+    logout();
+    std::cout << "Step 7: Logging in as admin to end election and view results...\n";
+    login("admin", "admin123");
+    elections.get(0)->endElection();
+    std::cout << "\nDEMO: Final Results for 'Local Election 2025':\n";
+    elections.get(0)->displayResults();
+    logout();
+    std::cout << "\n=== DEMO COMPLETE ===\n";
 }
