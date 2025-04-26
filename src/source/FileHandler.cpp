@@ -403,9 +403,9 @@ bool FileHandler::saveAdmins(const Array<Administrator>& admins) {
 }
 
 bool FileHandler::saveCandidates(const Array<Candidate>& candidates) {
-    std::ofstream file("data/candidate_users.txt");
+    std::ofstream file("data/candidates.txt");
     if (!file.is_open()) {
-        std::cerr << "Error opening file for candidate users: data/candidate_users.txt" << std::endl;
+        std::cerr << "Error opening file for candidates: data/candidates.txt" << std::endl;
         return false;
     }
     for (int i = 0; i < candidates.getSize(); i++) {
@@ -421,7 +421,7 @@ bool FileHandler::saveCandidates(const Array<Candidate>& candidates) {
 }
 
 bool FileHandler::loadCandidates(Array<Candidate>& candidates) {
-    std::ifstream file("data/candidate_users.txt");
+    std::ifstream file("data/candidates.txt");
     if (!file.is_open()) {
         // Not an error if file doesn't exist yet
         return true;
