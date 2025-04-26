@@ -19,41 +19,49 @@
 std::string getMaskedPassword();
 
 // Implementation of ElectionSystem class methods
-ElectionSystem::ElectionSystem() : currentUser(nullptr) {
+ElectionSystem::ElectionSystem() : currentUser(nullptr)
+{
     // Initialize the file handler
     fileHandler = new FileHandler();
-    
+
     // Try to load data from files
-    if (!loadData()) {
+    if (!loadData())
+    {
         // If loading fails, initialize with default data
         std::cout << "No existing data found. Creating seed data..."
                   << std::endl;
         seedData();
-        
+
         // Save the seed data to files
         saveData();
-    } else {
+    }
+    else
+    {
         std::cout << "Existing data loaded successfully."
                   << std::endl;
     }
 }
 
-ElectionSystem::~ElectionSystem() {
+ElectionSystem::~ElectionSystem()
+{
     // Save data before shutting down
     saveData();
-    
+
     // Clean up elections
-    for (int i = 0; i < elections.getSize(); i++) {
+    for (int i = 0; i < elections.getSize(); i++)
+    {
         delete elections.get(i);
     }
-    
+
     // Clean up file handler
     delete fileHandler;
 }
 
 // File handling methods
-bool ElectionSystem::saveData() {
-    if (!fileHandler) {
+bool ElectionSystem::saveData()
+{
+    if (!fileHandler)
+    {
         return false;
     }
 
@@ -62,17 +70,22 @@ bool ElectionSystem::saveData() {
     // Use FileHandler to save all data
     bool success = fileHandler->saveAllData(*this);
 
-    if (success) {
+    if (success)
+    {
         std::cout << "Data saved successfully." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "Error saving data." << std::endl;
     }
 
     return success;
 }
 
-bool ElectionSystem::loadData() {
-    if (!fileHandler) {
+bool ElectionSystem::loadData()
+{
+    if (!fileHandler)
+    {
         return false;
     }
 
@@ -81,16 +94,20 @@ bool ElectionSystem::loadData() {
     // Use FileHandler to load all data
     bool success = fileHandler->loadAllData(*this);
 
-    if (success) {
+    if (success)
+    {
         std::cout << "Data loaded successfully." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "Error loading data or no data found." << std::endl;
     }
 
     return success;
 }
 
-void ElectionSystem::seedData() {
+void ElectionSystem::seedData()
+{
     // Add some default administrators
     admins.add(Administrator("admin", "admin123", "System Admin", "A001", "Super Admin"));
     admins.add(Administrator("manager", "manager123", "Election Manager", "A002", "Manager"));
@@ -101,11 +118,15 @@ void ElectionSystem::seedData() {
     voters.add(Voter("voter3", "pass789", "Bob Johnson", "V003", "789 Oak St", "VID54321"));
 }
 
-bool ElectionSystem::login(std::string username, std::string password) {
+bool ElectionSystem::login(std::string username, std::string password)
+{
     // Try to login as voter
-    for (int i = 0; i < voters.getSize(); i++) {
-        if (voters.get(i).getUsername() == username) {
-            if (voters.get(i).login(username, password)) {
+    for (int i = 0; i < voters.getSize(); i++)
+    {
+        if (voters.get(i).getUsername() == username)
+        {
+            if (voters.get(i).login(username, password))
+            {
                 currentUser = &voters.get(i);
                 std::cout << "Logged in as Voter: " << currentUser->getName() << std::endl;
                 return true;
@@ -113,9 +134,12 @@ bool ElectionSystem::login(std::string username, std::string password) {
         }
     }
     // Try to login as admin
-    for (int i = 0; i < admins.getSize(); i++) {
-        if (admins.get(i).getUsername() == username) {
-            if (admins.get(i).login(username, password)) {
+    for (int i = 0; i < admins.getSize(); i++)
+    {
+        if (admins.get(i).getUsername() == username)
+        {
+            if (admins.get(i).login(username, password))
+            {
                 currentUser = &admins.get(i);
                 std::cout << "Logged in as Administrator: " << currentUser->getName() << std::endl;
                 return true;
@@ -123,9 +147,12 @@ bool ElectionSystem::login(std::string username, std::string password) {
         }
     }
     // Try to login as candidate
-    for (int i = 0; i < candidates.getSize(); i++) {
-        if (candidates.get(i).getUsername() == username) {
-            if (candidates.get(i).login(username, password)) {
+    for (int i = 0; i < candidates.getSize(); i++)
+    {
+        if (candidates.get(i).getUsername() == username)
+        {
+            if (candidates.get(i).login(username, password))
+            {
                 currentUser = &candidates.get(i);
                 std::cout << "Logged in as Candidate: " << currentUser->getName() << std::endl;
                 return true;
@@ -136,45 +163,56 @@ bool ElectionSystem::login(std::string username, std::string password) {
     return false;
 }
 
-void ElectionSystem::logout() {
-    if (currentUser) {
+void ElectionSystem::logout()
+{
+    if (currentUser)
+    {
         currentUser->logout();
         currentUser = nullptr;
         std::cout << "Logged out successfully." << std::endl;
     }
 }
 
-bool ElectionSystem::isLoggedIn() const {
+bool ElectionSystem::isLoggedIn() const
+{
     return currentUser != nullptr && currentUser->isAuthenticated();
 }
 
-bool ElectionSystem::isAdmin() const {
-    return dynamic_cast<Administrator*>(currentUser) != nullptr;
+bool ElectionSystem::isAdmin() const
+{
+    return dynamic_cast<Administrator *>(currentUser) != nullptr;
 }
 
-bool ElectionSystem::isCandidate() const {
-    return dynamic_cast<Candidate*>(currentUser) != nullptr;
+bool ElectionSystem::isCandidate() const
+{
+    return dynamic_cast<Candidate *>(currentUser) != nullptr;
 }
 
-void ElectionSystem::registerVoter(std::string username, std::string password, std::string name, 
-                                  std::string id, std::string address, std::string voterIdNumber) {
+void ElectionSystem::registerVoter(std::string username, std::string password, std::string name,
+                                   std::string id, std::string address, std::string voterIdNumber)
+{
     // Check if the current user is an admin
-    if (!isLoggedIn() || !isAdmin()) {
+    if (!isLoggedIn() || !isAdmin())
+    {
         std::cout << "Only administrators can register voters." << std::endl;
         return;
     }
-    
+
     // Check if username already exists
-    for (int i = 0; i < voters.getSize(); i++) {
-        if (voters.get(i).getUsername() == username) {
+    for (int i = 0; i < voters.getSize(); i++)
+    {
+        if (voters.get(i).getUsername() == username)
+        {
             std::cout << "Username already exists. Please choose another username." << std::endl;
             return;
         }
     }
 
     // Check if voter ID already exists
-    for (int i = 0; i < voters.getSize(); i++) {
-        if (voters.get(i).getVoterIdNumber() == voterIdNumber) {
+    for (int i = 0; i < voters.getSize(); i++)
+    {
+        if (voters.get(i).getVoterIdNumber() == voterIdNumber)
+        {
             std::cout << "Voter ID already exists. Please check your ID number." << std::endl;
             return;
         }
@@ -184,17 +222,19 @@ void ElectionSystem::registerVoter(std::string username, std::string password, s
     // This way, the voter object has the plaintext password for authentication
     // but we'll save the encrypted version to the file
     std::cout << "Creating voter with encrypted password..." << std::endl;
-    
+
     // Add the new voter with original password (for login authentication)
     voters.add(Voter(username, password, name, id, address, voterIdNumber));
     std::cout << "Voter registered successfully." << std::endl;
-    
+
     // Save all data immediately to ensure the encrypted password is stored
     saveData();
 }
 
-void ElectionSystem::registerVoter() {
-    if (!isLoggedIn() || !isAdmin()) {
+void ElectionSystem::registerVoter()
+{
+    if (!isLoggedIn() || !isAdmin())
+    {
         std::cout << "Only administrators can register voters." << std::endl;
         return;
     }
@@ -215,21 +255,27 @@ void ElectionSystem::registerVoter() {
     registerVoter(username, password, name, id, address, voterIdNumber);
 }
 
-void ElectionSystem::registerCandidate(std::string username, std::string password, std::string name, std::string id, std::string partyAffiliation) {
-    if (!isLoggedIn() || !isAdmin()) {
+void ElectionSystem::registerCandidate(std::string username, std::string password, std::string name, std::string id, std::string partyAffiliation)
+{
+    if (!isLoggedIn() || !isAdmin())
+    {
         std::cout << "Only administrators can register candidates." << std::endl;
         return;
     }
     // Check if username already exists
-    for (int i = 0; i < candidates.getSize(); i++) {
-        if (candidates.get(i).getUsername() == username) {
+    for (int i = 0; i < candidates.getSize(); i++)
+    {
+        if (candidates.get(i).getUsername() == username)
+        {
             std::cout << "Username already exists. Please choose another username." << std::endl;
             return;
         }
     }
     // Check if candidate ID already exists
-    for (int i = 0; i < candidates.getSize(); i++) {
-        if (candidates.get(i).getCandidateId() == id) {
+    for (int i = 0; i < candidates.getSize(); i++)
+    {
+        if (candidates.get(i).getCandidateId() == id)
+        {
             std::cout << "Candidate ID already exists. Please check your ID number." << std::endl;
             return;
         }
@@ -240,8 +286,10 @@ void ElectionSystem::registerCandidate(std::string username, std::string passwor
     saveData();
 }
 
-void ElectionSystem::createElection(int electionType) {
-    if (!isLoggedIn() || !isAdmin()) {
+void ElectionSystem::createElection(int electionType)
+{
+    if (!isLoggedIn() || !isAdmin())
+    {
         std::cout << "Only administrators can create elections." << std::endl;
         return;
     }
@@ -261,24 +309,28 @@ void ElectionSystem::createElection(int electionType) {
     std::cin >> durationSeconds;
     std::cin.ignore();
 
-    Election* newElection = nullptr;
+    Election *newElection = nullptr;
 
-    switch (electionType) {
-    case 1: { // Local Election
+    switch (electionType)
+    {
+    case 1:
+    { // Local Election
         std::string locality;
         std::cout << "Enter Locality: ";
         std::getline(std::cin, locality);
         newElection = new LocalElection(id, name, description, "", "", locality);
         break;
     }
-    case 2: { // National Election
+    case 2:
+    { // National Election
         std::string country;
         std::cout << "Enter Country: ";
         std::getline(std::cin, country);
         newElection = new NationalElection(id, name, description, "", "", country);
         break;
     }
-    case 3: { // Regional Election
+    case 3:
+    { // Regional Election
         std::string region, country;
         std::cout << "Enter Region: ";
         std::getline(std::cin, region);
@@ -292,15 +344,18 @@ void ElectionSystem::createElection(int electionType) {
         return;
     }
 
-    if (newElection) {
+    if (newElection)
+    {
         newElection->setDuration(durationMinutes, durationSeconds);
         elections.add(newElection);
         std::cout << "Election created successfully." << std::endl;
     }
 }
 
-void ElectionSystem::addCandidate() {
-    if (!isLoggedIn() || !isAdmin()) {
+void ElectionSystem::addCandidate()
+{
+    if (!isLoggedIn() || !isAdmin())
+    {
         std::cout << "Only administrators can add candidates." << std::endl;
         return;
     }
@@ -308,7 +363,8 @@ void ElectionSystem::addCandidate() {
     // Display available elections
     displayElections();
 
-    if (elections.getSize() == 0) {
+    if (elections.getSize() == 0)
+    {
         std::cout << "No elections available." << std::endl;
         return;
     }
@@ -317,12 +373,13 @@ void ElectionSystem::addCandidate() {
     std::cout << "Select an election to add a candidate to: ";
     std::cin >> electionChoice;
 
-    if (electionChoice < 1 || electionChoice > elections.getSize()) {
+    if (electionChoice < 1 || electionChoice > elections.getSize())
+    {
         std::cout << "Invalid election selection." << std::endl;
         return;
     }
 
-    Election* selectedElection = elections.get(electionChoice - 1);
+    Election *selectedElection = elections.get(electionChoice - 1);
 
     std::string id, name, partyAffiliation;
     std::cin.ignore(); // Clear the newline character
@@ -338,21 +395,35 @@ void ElectionSystem::addCandidate() {
 
     // For election candidates, use empty username/password
     Candidate newCandidate("", "", name, id, partyAffiliation);
+
+    // Check for National Election: only one candidate per party
+    if (selectedElection->getType() == "National") {
+        for (int i = 0; i < selectedElection->getCandidateCount(); i++) {
+            if (selectedElection->getCandidate(i).getPartyAffiliation() == partyAffiliation) {
+                std::cout << "A candidate from this party already exists in this national election.\n";
+                return;
+            }
+        }
+    }
     selectedElection->addCandidate(newCandidate);
     std::cout << "Candidate added successfully." << std::endl;
 }
 
-void ElectionSystem::displayElections() const {
+void ElectionSystem::displayElections() const
+{
     std::cout << "\nAvailable Elections:" << std::endl;
-    for (int i = 0; i < elections.getSize(); i++) {
-        Election* election = elections.get(i);
+    for (int i = 0; i < elections.getSize(); i++)
+    {
+        Election *election = elections.get(i);
         std::cout << i + 1 << ". " << election->getName() << " - Type: " << election->getType()
-             << " - Status: " << (election->isElectionActive() ? "Active" : "Inactive") << std::endl;
+                  << " - Status: " << (election->isElectionActive() ? "Active" : "Inactive") << std::endl;
     }
 }
 
-void ElectionSystem::manageElection() {
-    if (!isLoggedIn() || !isAdmin()) {
+void ElectionSystem::manageElection()
+{
+    if (!isLoggedIn() || !isAdmin())
+    {
         std::cout << "Only administrators can manage elections." << std::endl;
         return;
     }
@@ -366,7 +437,8 @@ void ElectionSystem::manageElection() {
 
     displayElections();
 
-    if (elections.getSize() == 0) {
+    if (elections.getSize() == 0)
+    {
         std::cout << "No elections available." << std::endl;
         return;
     }
@@ -375,26 +447,34 @@ void ElectionSystem::manageElection() {
     std::cout << "Select an election: ";
     std::cin >> electionChoice;
 
-    if (electionChoice < 1 || electionChoice > elections.getSize()) {
+    if (electionChoice < 1 || electionChoice > elections.getSize())
+    {
         std::cout << "Invalid election selection." << std::endl;
         return;
     }
 
-    Election* selectedElection = elections.get(electionChoice - 1);
+    Election *selectedElection = elections.get(electionChoice - 1);
 
-    if (action == 1) {
+    if (action == 1)
+    {
         selectedElection->startElection();
         std::cout << "Election started. It will end automatically after the set duration." << std::endl;
-    } else if (action == 2) {
+    }
+    else if (action == 2)
+    {
         selectedElection->endElection();
         std::cout << "Election ended manually." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cout << "Invalid choice." << std::endl;
     }
 }
 
-void ElectionSystem::castVote() {
-    if (!isLoggedIn() || isAdmin()) {
+void ElectionSystem::castVote()
+{
+    if (!isLoggedIn() || isAdmin())
+    {
         std::cout << "Only voters can cast votes." << std::endl;
         return;
     }
@@ -402,17 +482,22 @@ void ElectionSystem::castVote() {
     // Display active elections
     std::cout << "\nActive Elections:" << std::endl;
     int activeCount = 0;
-    for (int i = 0; i < elections.getSize(); i++) {
-        Election* election = elections.get(i);
-        if (election->isElectionActive()) {
+    for (int i = 0; i < elections.getSize(); i++)
+    {
+        Election *election = elections.get(i);
+        if (election->isElectionActive())
+        {
             std::cout << ++activeCount << ". " << election->getName() << " - Type: " << election->getType() << std::endl;
-        } else if (!election->isElectionActive()) {
+        }
+        else if (!election->isElectionActive())
+        {
             // If election was active but time expired, end it
             election->endElection();
         }
     }
 
-    if (activeCount == 0) {
+    if (activeCount == 0)
+    {
         std::cout << "No active elections available." << std::endl;
         return;
     }
@@ -421,31 +506,37 @@ void ElectionSystem::castVote() {
     std::cout << "Select an election to vote in: ";
     std::cin >> electionChoice;
 
-    if (electionChoice < 1 || electionChoice > activeCount) {
+    if (electionChoice < 1 || electionChoice > activeCount)
+    {
         std::cout << "Invalid election selection." << std::endl;
         return;
     }
 
     // Find the selected active election
-    Election* selectedElection = nullptr;
+    Election *selectedElection = nullptr;
     int currentActive = 0;
-    for (int i = 0; i < elections.getSize(); i++) {
-        if (elections.get(i)->isElectionActive()) {
+    for (int i = 0; i < elections.getSize(); i++)
+    {
+        if (elections.get(i)->isElectionActive())
+        {
             currentActive++;
-            if (currentActive == electionChoice) {
+            if (currentActive == electionChoice)
+            {
                 selectedElection = elections.get(i);
                 break;
             }
         }
     }
 
-    if (!selectedElection) {
+    if (!selectedElection)
+    {
         std::cout << "Error selecting election." << std::endl;
         return;
     }
 
     // Check if already voted
-    if (selectedElection->hasVoted(currentUser->getId())) {
+    if (selectedElection->hasVoted(currentUser->getId()))
+    {
         std::cout << "You have already voted in this election." << std::endl;
         return;
     }
@@ -457,7 +548,8 @@ void ElectionSystem::castVote() {
     std::cout << "Select a candidate to vote for: ";
     std::cin >> candidateChoice;
 
-    if (candidateChoice < 1 || candidateChoice > selectedElection->getCandidateCount()) {
+    if (candidateChoice < 1 || candidateChoice > selectedElection->getCandidateCount())
+    {
         std::cout << "Invalid candidate selection." << std::endl;
         return;
     }
@@ -467,10 +559,12 @@ void ElectionSystem::castVote() {
     std::cout << "Vote cast successfully!" << std::endl;
 }
 
-void ElectionSystem::viewResults() const {
+void ElectionSystem::viewResults() const
+{
     displayElections();
 
-    if (elections.getSize() == 0) {
+    if (elections.getSize() == 0)
+    {
         return;
     }
 
@@ -478,34 +572,44 @@ void ElectionSystem::viewResults() const {
     std::cout << "Select an election to view results: ";
     std::cin >> electionChoice;
 
-    if (electionChoice < 1 || electionChoice > elections.getSize()) {
+    if (electionChoice < 1 || electionChoice > elections.getSize())
+    {
         std::cout << "Invalid election selection." << std::endl;
         return;
     }
 
-    Election* selectedElection = elections.get(electionChoice - 1);
+    Election *selectedElection = elections.get(electionChoice - 1);
     selectedElection->displayResults();
 }
 
-void ElectionSystem::displayMainMenu() const {
+void ElectionSystem::displayMainMenu() const
+{
     std::cout << "\n=== Online Voting System ===" << std::endl;
     std::cout << "1. Login" << std::endl;
     std::cout << "2. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
-std::string getMaskedPassword() {
+std::string getMaskedPassword()
+{
     std::string password;
     char ch;
-    while ((ch = _getch()) != '\r') { // Enter key
-        if (ch == '\b') { // Backspace
-            if (!password.empty()) {
+    while ((ch = _getch()) != '\r')
+    { // Enter key
+        if (ch == '\b')
+        { // Backspace
+            if (!password.empty())
+            {
                 password.pop_back();
                 std::cout << "\b \b";
             }
-        } else if (ch == 3) { // Ctrl+C
+        }
+        else if (ch == 3)
+        { // Ctrl+C
             exit(0);
-        } else if (isprint(ch)) {
+        }
+        else if (isprint(ch))
+        {
             password += ch;
             std::cout << '*';
         }
@@ -514,14 +618,19 @@ std::string getMaskedPassword() {
     return password;
 }
 
-void ElectionSystem::run() {
+void ElectionSystem::run()
+{
     int choice;
-    while (true) {
-        if (!isLoggedIn()) {
+    while (true)
+    {
+        if (!isLoggedIn())
+        {
             displayMainMenu();
             std::cin >> choice;
-            switch (choice) {
-            case 1: {
+            switch (choice)
+            {
+            case 1:
+            {
                 std::string username, password;
                 std::cout << "Enter Username: ";
                 std::cin >> username;
@@ -536,17 +645,18 @@ void ElectionSystem::run() {
             default:
                 std::cout << "Invalid choice. Please try again." << std::endl;
             }
-        } else {
+        }
+        else
+        {
             // User is logged in, show appropriate menu
             currentUser->displayMenu();
-            std::cout << "3. Register Voter" << std::endl;
-            std::cout << "4. Manage Election" << std::endl;
-            std::cout << "5. View Results" << std::endl;
-            std::cout << "6. Logout" << std::endl;
             std::cin >> choice;
-            if (isAdmin()) {
-                switch (choice) {
-                case 1: {
+            if (isAdmin())
+            {
+                switch (choice)
+                {
+                case 1:
+                {
                     int electionType;
                     std::cout << "\nSelect Election Type:" << std::endl;
                     std::cout << "1. Local Election" << std::endl;
@@ -576,8 +686,11 @@ void ElectionSystem::run() {
                 default:
                     std::cout << "Invalid choice. Please try again." << std::endl;
                 }
-            } else if (isCandidate()) {
-                switch (choice) {
+            }
+            else if (isCandidate())
+            {
+                switch (choice)
+                {
                 case 1:
                     std::cout << "\nCandidate Profile: " << currentUser->getName() << std::endl;
                     break;
@@ -590,8 +703,11 @@ void ElectionSystem::run() {
                 default:
                     std::cout << "Invalid choice. Please try again." << std::endl;
                 }
-            } else { // Voter
-                switch (choice) {
+            }
+            else
+            { // Voter
+                switch (choice)
+                {
                 case 1:
                     castVote();
                     break;
@@ -609,10 +725,12 @@ void ElectionSystem::run() {
     }
 }
 
-void ElectionSystem::runDemo() {
+void ElectionSystem::runDemo()
+{
     std::cout << "\n=== DEMO MODE: Online Voting System ===\n";
     std::cout << "Step 1: Logging in as admin (admin/admin123)...\n";
-    if (!login("admin", "admin123")) {
+    if (!login("admin", "admin123"))
+    {
         std::cout << "Demo failed: Could not login as admin.\n";
         return;
     }
@@ -626,7 +744,8 @@ void ElectionSystem::runDemo() {
     elections.get(0)->startElection();
     logout();
     std::cout << "Step 5: Logging in as voter (voter1/pass123)...\n";
-    if (!login("voter1", "pass123")) {
+    if (!login("voter1", "pass123"))
+    {
         std::cout << "Demo failed: Could not login as voter.\n";
         return;
     }
