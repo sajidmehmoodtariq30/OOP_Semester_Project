@@ -15,8 +15,8 @@ protected:
     time_t startDate;
     time_t endDate;
     bool isActive;
-    candidates* candidates;
-    vote* votes;
+    Array<Candidate> candidates;
+    Array<Vote> votes;
 
 public:
     // Accessor methods for protected members
@@ -33,7 +33,6 @@ public:
     bool isElectionActive() const;
     void startElection();
     void endElection();
-    
     void addCandidate(const Candidate &candidate);
     bool hasVoted(const std::string &voterId) const;
     bool castVote(const std::string &voterId, const std::string &candidateId);
