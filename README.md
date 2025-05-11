@@ -1,6 +1,6 @@
 # 🎯 Castify - Voting Management System
 
-<img src="./assets/logo.png" width="120" />
+![Castify logo](./assets/logo.png)
 
 **Castify** is an Object-Oriented Voting Management System developed in C++ (no STL containers) with file-based data persistence. It provides role-based access for administrators, voters, and candidates, supporting secure, real-world election workflows.
 
@@ -34,7 +34,7 @@
 
 ## 🗂️ Project Structure
 
-```
+``` text
 OOP_Semester_Project/
 ├── main.cpp
 ├── build.bat
@@ -64,12 +64,15 @@ OOP_Semester_Project/
 ## ⚙️ Build & Run (Windows)
 
 1. **Build using batch script:**
+
    ```powershell
    .\build.bat
    ```
+
    This compiles all sources and creates `voting_system.exe` in the `build/` directory.
 
 2. **Run the program:**
+
    ```powershell
    .\build\voting_system.exe
    ```
@@ -108,7 +111,3 @@ All data is persisted in `/data` as plain text. Passwords are stored with basic 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
-
-## 📧 Contact
-
-For inquiries or feedback, please reach out via GitHub Issues or contact [sajidmehmoodtariq30](https://github.com/sajidmehmoodtariq30).
