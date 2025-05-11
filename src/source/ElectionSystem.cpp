@@ -18,6 +18,33 @@
 // Forward declaration for getMaskedPassword
 std::string getMaskedPassword();
 
+// Helper function to safely get menu choice input
+int getMenuChoice(int minChoice, int maxChoice) {
+    int choice;
+    bool validInput = false;
+    
+    while (!validInput) {
+        std::cin >> choice;
+        
+        if (std::cin.fail()) {
+            // Invalid input (not an integer)
+            std::cout << "Invalid input. Please enter a number: ";
+            std::cin.clear();
+            while (std::cin.get() != '\n'); // Clear the input buffer
+        }
+        else if (choice < minChoice || choice > maxChoice) {
+            // Out of valid range
+            std::cout << "Invalid choice. Please enter a number between " 
+                      << minChoice << " and " << maxChoice << ": ";
+        }
+        else {
+            validInput = true;
+        }
+    }
+    
+    return choice;
+}
+
 // Implementation of ElectionSystem class methods
 ElectionSystem::ElectionSystem() : currentUser(nullptr)
 {
@@ -303,10 +330,49 @@ void ElectionSystem::createElection(int electionType)
     std::getline(std::cin, name);
     std::cout << "Enter Description: ";
     std::getline(std::cin, description);
+    
     std::cout << "Enter Election Duration (minutes): ";
-    std::cin >> durationMinutes;
+    std::string minutesInput;
+    bool validMinutes = false;
+    while (!validMinutes) {
+        std::cin >> durationMinutes;
+        
+        if (std::cin.fail()) {
+            // Invalid input (not an integer)
+            std::cout << "Invalid input. Please enter a valid number for minutes: ";
+            std::cin.clear();
+            while (std::cin.get() != '\n'); // Clear input buffer
+        }
+        else if (durationMinutes < 0) {
+            // Negative number
+            std::cout << "Please enter a non-negative number for minutes: ";
+        }
+        else {
+            validMinutes = true;
+        }
+    }
+    
     std::cout << "Enter Election Duration (seconds): ";
-    std::cin >> durationSeconds;
+    std::string secondsInput;
+    bool validSeconds = false;
+    while (!validSeconds) {
+        std::cin >> durationSeconds;
+        
+        if (std::cin.fail()) {
+            // Invalid input (not an integer)
+            std::cout << "Invalid input. Please enter a valid number for seconds: ";
+            std::cin.clear();
+            while (std::cin.get() != '\n'); // Clear input buffer
+        }
+        else if (durationSeconds < 0 || durationSeconds >= 60) {
+            // Outside valid range
+            std::cout << "Please enter a number between 0 and 59 for seconds: ";
+        }
+        else {
+            validSeconds = true;
+        }
+    }
+    
     std::cin.ignore();
 
     Election *newElection = nullptr;
@@ -433,7 +499,7 @@ void ElectionSystem::manageElection()
     std::cout << "1. Start Election" << std::endl;
     std::cout << "2. End Election" << std::endl;
     std::cout << "Enter your choice: ";
-    std::cin >> action;
+    action = getMenuChoice(1, 2); // Updated to use getMenuChoice
 
     displayElections();
 
@@ -445,13 +511,7 @@ void ElectionSystem::manageElection()
 
     int electionChoice;
     std::cout << "Select an election: ";
-    std::cin >> electionChoice;
-
-    if (electionChoice < 1 || electionChoice > elections.getSize())
-    {
-        std::cout << "Invalid election selection." << std::endl;
-        return;
-    }
+    electionChoice = getMenuChoice(1, elections.getSize()); // Updated to use getMenuChoice
 
     Election *selectedElection = elections.get(electionChoice - 1);
 
@@ -464,10 +524,6 @@ void ElectionSystem::manageElection()
     {
         selectedElection->endElection();
         std::cout << "Election ended manually." << std::endl;
-    }
-    else
-    {
-        std::cout << "Invalid choice." << std::endl;
     }
 }
 
@@ -504,13 +560,7 @@ void ElectionSystem::castVote()
 
     int electionChoice;
     std::cout << "Select an election to vote in: ";
-    std::cin >> electionChoice;
-
-    if (electionChoice < 1 || electionChoice > activeCount)
-    {
-        std::cout << "Invalid election selection." << std::endl;
-        return;
-    }
+    electionChoice = getMenuChoice(1, activeCount); // Updated to use getMenuChoice
 
     // Find the selected active election
     Election *selectedElection = nullptr;
@@ -546,13 +596,7 @@ void ElectionSystem::castVote()
 
     int candidateChoice;
     std::cout << "Select a candidate to vote for: ";
-    std::cin >> candidateChoice;
-
-    if (candidateChoice < 1 || candidateChoice > selectedElection->getCandidateCount())
-    {
-        std::cout << "Invalid candidate selection." << std::endl;
-        return;
-    }
+    candidateChoice = getMenuChoice(1, selectedElection->getCandidateCount()); // Updated to use getMenuChoice
 
     std::string candidateId = selectedElection->getCandidate(candidateChoice - 1).getId();
     selectedElection->castVote(currentUser->getId(), candidateId);
@@ -570,13 +614,7 @@ void ElectionSystem::viewResults() const
 
     int electionChoice;
     std::cout << "Select an election to view results: ";
-    std::cin >> electionChoice;
-
-    if (electionChoice < 1 || electionChoice > elections.getSize())
-    {
-        std::cout << "Invalid election selection." << std::endl;
-        return;
-    }
+    electionChoice = getMenuChoice(1, elections.getSize()); // Updated to use getMenuChoice
 
     Election *selectedElection = elections.get(electionChoice - 1);
     selectedElection->displayResults();
@@ -626,7 +664,7 @@ void ElectionSystem::run()
         if (!isLoggedIn())
         {
             displayMainMenu();
-            std::cin >> choice;
+            choice = getMenuChoice(1, 2); // Updated to use getMenuChoice
             switch (choice)
             {
             case 1:
@@ -642,15 +680,25 @@ void ElectionSystem::run()
             case 2:
                 std::cout << "Thank you for using the Online Voting System!" << std::endl;
                 return;
-            default:
-                std::cout << "Invalid choice. Please try again." << std::endl;
             }
         }
         else
         {
             // User is logged in, show appropriate menu
             currentUser->displayMenu();
-            std::cin >> choice;
+            
+            // Get number of menu options based on user type
+            int maxOption = 0;
+            if (isAdmin()) {
+                maxOption = 6;
+            } else if (isCandidate()) {
+                maxOption = 3;
+            } else { // Voter
+                maxOption = 3;
+            }
+            
+            choice = getMenuChoice(1, maxOption); // Updated to use getMenuChoice
+            
             if (isAdmin())
             {
                 switch (choice)
@@ -663,7 +711,7 @@ void ElectionSystem::run()
                     std::cout << "2. National Election" << std::endl;
                     std::cout << "3. Regional Election" << std::endl;
                     std::cout << "Enter your choice: ";
-                    std::cin >> electionType;
+                    electionType = getMenuChoice(1, 3); // Updated to use getMenuChoice
                     createElection(electionType);
                     break;
                 }
@@ -683,8 +731,6 @@ void ElectionSystem::run()
                 case 6:
                     logout();
                     break;
-                default:
-                    std::cout << "Invalid choice. Please try again." << std::endl;
                 }
             }
             else if (isCandidate())
@@ -700,8 +746,6 @@ void ElectionSystem::run()
                 case 3:
                     logout();
                     break;
-                default:
-                    std::cout << "Invalid choice. Please try again." << std::endl;
                 }
             }
             else
@@ -717,8 +761,6 @@ void ElectionSystem::run()
                 case 3:
                     logout();
                     break;
-                default:
-                    std::cout << "Invalid choice. Please try again." << std::endl;
                 }
             }
         }
