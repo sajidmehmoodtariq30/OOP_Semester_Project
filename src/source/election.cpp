@@ -183,6 +183,14 @@ const Candidate& Election::getCandidate(int index) const {
     return candidates.get(index);
 }
 
+int Election::getVoteCount() const {
+    return votes.getSize();
+}
+
+const Vote& Election::getVote(int index) const {
+    return votes.get(index);
+}
+
 bool Election::operator==(const Election &other) const {
     return id == other.id;
 }

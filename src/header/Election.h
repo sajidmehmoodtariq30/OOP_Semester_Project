@@ -26,6 +26,9 @@ public:
     int getCandidateCount() const;
     Candidate& getCandidate(int index);
     const Candidate& getCandidate(int index) const;
+    // Add vote accessors
+    int getVoteCount() const;
+    const Vote& getVote(int index) const;
 
     Election(std::string id, std::string name, std::string description, 
              time_t startDate, time_t endDate);

@@ -475,12 +475,11 @@ bool FileHandler::saveElections(const Array<Election*>& elections) {
             candidateFile << serializeCandidate(candidate, election->getId()) << std::endl;
         }
         
-        // Note: We would need a way to access votes from the Election class
-        // This is a placeholder for that functionality
-        // for (int j = 0; j < election->getVoteCount(); j++) {
-        //    const Vote& vote = election->getVote(j);
-        //    voteFile << serializeVote(vote, election->getId()) << std::endl;
-        // }
+        // Save votes for this election
+        for (int j = 0; j < election->getVoteCount(); j++) {
+            const Vote& vote = election->getVote(j);
+            voteFile << serializeVote(vote, election->getId()) << std::endl;
+        }
     }
     
     return true;
